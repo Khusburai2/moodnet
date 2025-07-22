@@ -1,0 +1,473 @@
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Container Styles */
+.registration-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative Circles */
+.decorative-circle {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.2;
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+}
+
+.circle-1 {
+  top: 80px;
+  left: 40px;
+  width: 80px;
+  height: 80px;
+  background: white;
+  animation-name: pulse;
+}
+
+.circle-2 {
+  top: 160px;
+  right: 80px;
+  width: 60px;
+  height: 60px;
+  background: #f9a8d4;
+  animation-name: bounce;
+  opacity: 0.3;
+}
+
+.circle-3 {
+  bottom: 130px;
+  left: 25%;
+  width: 40px;
+  height: 40px;
+  background: #d8b4fe;
+  animation-name: ping;
+  opacity: 0.3;
+}
+
+.circle-4 {
+  bottom: 80px;
+  right: 33%;
+  width: 50px;
+  height: 50px;
+  background: white;
+  animation-name: pulse;
+  opacity: 0.15;
+}
+
+/* Content Layout */
+.registration-content {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Form Styles */
+.registration-form {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  padding: 32px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.registration-form:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.form-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.form-header h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 12px;
+}
+
+.form-header p {
+  color: #4b5563;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.header-divider {
+  width: 64px;
+  height: 2px;
+  background: linear-gradient(to right, #ec4899, #8b5cf6);
+  margin: 12px auto 0;
+  border-radius: 1px;
+}
+
+/* Form Fields */
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  color: #1f2937;
+  font-size: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.form-group input::placeholder {
+  color: #6b7280;
+}
+
+.form-group input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.2);
+}
+
+.form-group input:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+/* Button Styles */
+button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(to right, #ec4899, #8b5cf6);
+  color: white;
+  font-weight: 700;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(to right, #db2777, #7c3aed);
+  transform: scale(1.02);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Loading Spinner */
+.loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid white;
+  border-top-color: transparent;
+  border-radius: 50%;
+  margin-right: 12px;
+  animation: spin 1s linear infinite;
+}
+
+/* Login Link */
+.login-link {
+  text-align: center;
+  margin-top: 32px;
+}
+
+.login-link p {
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.login-link a {
+  color: #ec4899;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.login-link a:hover {
+  color: #db2777;
+  text-decoration: underline;
+}
+
+/* Brain Illustration */
+.brain-illustration {
+  display: none;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .brain-illustration {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.brain-container {
+  position: relative;
+  width: 320px;
+  height: 384px;
+}
+
+.brain-main {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, #f9a8d4, #ec4899);
+  border-radius: 50%;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.brain-center {
+  position: absolute;
+  top: 128px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 128px;
+  height: 80px;
+  background: linear-gradient(to right, #ec4899, #7c3aed);
+  border-radius: 50%;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.brain-detail {
+  position: absolute;
+  background: #9d174d;
+  border-radius: 50%;
+}
+
+.detail-1 {
+  top: 8px;
+  left: 16px;
+  width: 64px;
+  height: 48px;
+  opacity: 0.6;
+}
+
+.detail-2 {
+  top: 16px;
+  right: 24px;
+  width: 48px;
+  height: 32px;
+  opacity: 0.4;
+}
+
+.detail-3 {
+  bottom: 8px;
+  left: 24px;
+  width: 32px;
+  height: 24px;
+  opacity: 0.5;
+}
+
+.brain-arm {
+  position: absolute;
+  width: 32px;
+  height: 64px;
+  background: #ec4899;
+  border-radius: 50%;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.arm-left {
+  top: 16px;
+  left: -40px;
+  transform: rotate(45deg);
+}
+
+.arm-right {
+  top: 16px;
+  right: -40px;
+  transform: rotate(-45deg);
+}
+
+/* Achievement Icons */
+.achievement-icon {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+}
+
+.icon-1 {
+  top: 64px;
+  left: 48px;
+  background: linear-gradient(to bottom right, #facc15, #f59e0b);
+  animation-name: bounce;
+}
+
+.icon-2 {
+  top: 48px;
+  right: 64px;
+  background: linear-gradient(to bottom right, #4ade80, #059669);
+  animation-name: bounce;
+}
+
+.icon-3 {
+  top: 160px;
+  left: 32px;
+  background: linear-gradient(to bottom right, #60a5fa, #2563eb);
+  animation-name: bounce;
+}
+
+.icon-4 {
+  top: 144px;
+  right: 48px;
+  background: linear-gradient(to bottom right, #f87171, #dc2626);
+  animation-name: bounce;
+}
+
+.icon-5 {
+  bottom: 80px;
+  left: 64px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(to bottom right, #a78bfa, #7c3aed);
+  animation-name: pulse;
+}
+
+.icon-6 {
+  bottom: 64px;
+  right: 80px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(to bottom right, #2dd4bf, #0d9488);
+  animation-name: pulse;
+}
+
+/* Decorative Elements */
+.decorative-element {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(to bottom right, white, #fbcfe8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  animation-duration: 3s;
+  animation-iteration-count: infinite;
+}
+
+.element-1 {
+  top: -24px;
+  left: -24px;
+  width: 48px;
+  height: 48px;
+  opacity: 0.8;
+  animation-name: bounce;
+}
+
+.element-2 {
+  top: 80px;
+  right: -32px;
+  width: 32px;
+  height: 32px;
+  opacity: 0.7;
+  animation-name: pulse;
+}
+
+.element-3 {
+  bottom: 40px;
+  left: -40px;
+  width: 64px;
+  height: 64px;
+  opacity: 0.6;
+  animation-name: bounce;
+}
+
+.element-4 {
+  bottom: 128px;
+  right: -16px;
+  width: 24px;
+  height: 24px;
+  opacity: 0.5;
+  animation-name: pulse;
+}
+
+/* Orbital Ring */
+.orbital-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 384px;
+  height: 384px;
+  border: 2px solid rgba(236, 72, 153, 0.3);
+  border-radius: 50%;
+  animation: spin 20s linear infinite;
+}
+
+/* Animations */
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+@keyframes ping {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(2); opacity: 0; }
+}
