@@ -36,18 +36,24 @@
 
 // src/App.jsx
 // src/App.jsx
-import React from 'react';
-import RegistrationPage from './pages/auth/register';
-import LoginPage from './pages/auth/login';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './pages/home/home';
+import Login from './pages/auth/login';
+import Register from './pages/auth/register';
+import Tracker from './pages/tracker/track';
+import './App.css';
 
 function App() {
   return (
-    <div>
-      <LoginPage />
-      {<RegistrationPage />}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/auth/login" element={<Login />} />
+        <Route path="/auth/register" element={<Register />} />
+        <Route path="/tracker" element={<Tracker />} />
+      </Routes>
+    </Router>
   );
 }
 
 export default App;
-
