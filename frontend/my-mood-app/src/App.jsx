@@ -41,6 +41,7 @@ import Home from './pages/home/home';
 import Login from './pages/auth/login';
 import Register from './pages/auth/register';
 import Tracker from './pages/tracker/track';
+import Journal from './pages/journal/journal';
 import './App.css';
 
 function App() {
@@ -51,6 +52,7 @@ function App() {
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/register" element={<Register />} />
         <Route path="/tracker" element={<Tracker />} />
+        <Route path="/journal" element={<Journal />} />
       </Routes>
     </Router>
   );

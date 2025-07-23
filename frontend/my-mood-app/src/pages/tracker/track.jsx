@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PenTool } from 'lucide-react';
 
 const MoodTracker = () => {
+  const navigate = useNavigate();
   const [selectedMood, setSelectedMood] = useState('');
   const [moodIntensity, setMoodIntensity] = useState(5);
   const [moodDescription, setMoodDescription] = useState('');
@@ -21,14 +23,37 @@ const MoodTracker = () => {
   const handleSaveMood = () => {
     if (selectedMood) {
       const selectedMoodData = moodOptions.find(mood => mood.value === selectedMood);
+      const moodData = {
+        mood: selectedMoodData.label,
+        intensity: moodIntensity,
+        description: moodDescription,
+        date: new Date().toLocaleDateString()
+      };
+      
+      // Save to localStorage
+      const savedMoods = JSON.parse(localStorage.getItem('moodHistory')) || [];
+      localStorage.setItem('moodHistory', JSON.stringify([...savedMoods, moodData]));
+      
       alert(`Mood saved: ${selectedMoodData.label} (${moodIntensity}/10)`);
+      setMoodDescription('');
     } else {
       alert('Please select a mood first');
     }
   };
 
   const handleAddJournalEntry = () => {
-    alert('Journal entry feature would open here');
+    if (!selectedMood) {
+      alert('Please select your mood first before journaling');
+      return;
+    }
+    
+    navigate('/journal', { 
+      state: { 
+        mood: selectedMood,
+        intensity: moodIntensity,
+        initialText: moodDescription 
+      } 
+    });
   };
 
   return (
