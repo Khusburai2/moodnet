@@ -36,26 +36,42 @@
 
 // src/App.jsx
 // src/App.jsx
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Home from './pages/home/home';
+import ProtectedRoute from './ProtectedRoute';
+import Home from './pages/home/home';  // Note lowercase for consistency
 import Login from './pages/auth/login';
 import Register from './pages/auth/register';
-import Tracker from './pages/tracker/track';
-import Journal from './pages/journal/journal';
-import './App.css';
+// import Tracker from './pages/tracker/tracker';  // Add other pages as needed
+// import Journal from './pages/journal/journal';
+// import Post from './pages/post/post';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* Public routes */}
         <Route path="/auth/login" element={<Login />} />
         <Route path="/auth/register" element={<Register />} />
-        <Route path="/tracker" element={<Tracker />} />
-        <Route path="/journal" element={<Journal />} />
+        
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/tracker" element={<Tracker />} />
+          <Route path="/journal" element={<Journal />} />
+          {/* <Route path="/post" element={<Post />} /> */}
+        </Route>
+
+        {/* 404 Not Found */}
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </Router>
   );
 }
 
+axios.get('http://localhost:8000/api/some-endpoint/')
+  .then(response => console.log(response.data))
+  .catch(error => console.error(error));
+
+  
 export default App;

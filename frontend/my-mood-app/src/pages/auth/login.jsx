@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { Heart, Sparkles } from 'lucide-react';
 import './login.css';
 
 const LoginPage = () => {
@@ -7,8 +10,9 @@ const LoginPage = () => {
     password: '',
     rememberMe: false
   });
-
+  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -18,15 +22,34 @@ const LoginPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log('Login data:', formData);
+    setError('');
     
-    setTimeout(() => {
+    try {
+      const response = await axios.post('http://localhost:8000/api/auth/login/', {
+        username: formData.username,
+        password: formData.password
+      });
+      
+      // Store tokens and user data
+      localStorage.setItem('access_token', response.data.tokens.access);
+      localStorage.setItem('refresh_token', response.data.tokens.refresh);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      if (formData.rememberMe) {
+        localStorage.setItem('rememberMe', 'true');
+      } else {
+        localStorage.removeItem('rememberMe');
+      }
+      
+      navigate('/dashboard'); // Redirect to protected page
+    } catch (err) {
+      setError(err.response?.data?.error || 'Login failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      alert('Login successful! Welcome to your wellness journey!');
-    }, 2000);
+    }
   };
 
   return (
@@ -47,12 +70,14 @@ const LoginPage = () => {
           </div>
 
           <form onSubmit={handleSubmit} className="form-fields">
+            {error && <div className="error-message">{error}</div>}
+            
             {/* Username Field */}
             <div className="form-group">
               <input
                 type="text"
                 name="username"
-                placeholder="Username or Email"
+                placeholder="Username"
                 value={formData.username}
                 onChange={handleInputChange}
                 required
@@ -121,7 +146,7 @@ const LoginPage = () => {
           <div className="signup-link">
             <p>
               Don't have an account?{' '}
-              <a href="#">Sign up here</a>
+              <a href="/auth/register">Sign up here</a>
             </p>
           </div>
         </div>
@@ -161,6 +186,20 @@ const LoginPage = () => {
             
             {/* Inner Energy Ring */}
             <div className="energy-ring"></div>
+
+            {/* Floating Icons */}
+            <div className="floating-element heart-1">
+              <Heart size={16} fill="#FF4757" color="#FF4757" />
+            </div>
+            <div className="floating-element heart-2">
+              <Heart size={12} fill="#FF69B4" color="#FF69B4" />
+            </div>
+            <div className="floating-element sparkle-1">
+              <Sparkles size={14} color="#FFB6C1" />
+            </div>
+            <div className="floating-element sparkle-2">
+              <Sparkles size={18} color="#FF69B4" />
+            </div>
           </div>
         </div>
       </div>
