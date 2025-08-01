@@ -1,138 +1,250 @@
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+
+    
+
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from .serializers import RegisterSerializer
+from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.exceptions import TokenError
-from .serializer import UserSerializer
-import re
+from django.contrib.auth.models import User
 
-# Generate JWT tokens
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "User registered successfully"}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# Helper function for password validation
-def validate_password(password):
-    if len(password) < 8:
-        return False, "Password must be at least 8 characters long"
-    if not re.search(r'[A-Z]', password):
-        return False, "Password must contain at least one uppercase letter"
-    if not re.search(r'[a-z]', password):
-        return False, "Password must contain at least one lowercase letter"
-    if not re.search(r'[0-9]', password):
-        return False, "Password must contain at least one number"
-    return True, ""
+class LoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        user = authenticate(username=username, password=password)
 
-# User registration with improved validation
-@api_view(['POST'])
-def register_user(request):
-    username = request.data.get('username')
-    email = request.data.get('email')
-    password = request.data.get('password')
-    password2 = request.data.get('password2')
+        if user:
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                "tokens": {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh)
+                },
+                "user": {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email
+                }
+            })
+        return Response({"error": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Validation checks
-    if not all([username, email, password, password2]):
-        return Response({'error': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+# views.py
+# moods/views.py
 
-    if password != password2:
-        return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework import generics, permissions
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from django.http import HttpResponse
+from .models import MoodEntry
+from .serializers import MoodEntrySerializer
+from django.utils.timezone import now
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
 
-    is_valid, message = validate_password(password)
-    if not is_valid:
-        return Response({'error': message}, status=status.HTTP_400_BAD_REQUEST)
+class MoodEntryCreateView(generics.CreateAPIView):
+    serializer_class = MoodEntrySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    if User.objects.filter(username=username).exists():
-        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
-    if User.objects.filter(email=email).exists():
-        return Response({'error': 'Email already registered'}, status=status.HTTP_400_BAD_REQUEST)
+class MoodEntryListView(generics.ListAPIView):
+    serializer_class = MoodEntrySerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    try:
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=password
+    def get_queryset(self):
+        return MoodEntry.objects.filter(user=self.request.user).order_by('date')
+
+class MoodReportPDFView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        mood_entries = MoodEntry.objects.filter(user=request.user).order_by('date')
+
+        buffer = io.BytesIO()
+        p = canvas.Canvas(buffer, pagesize=letter)
+        width, height = letter
+
+        p.setFont("Helvetica-Bold", 16)
+        p.drawString(200, height - 40, f"{request.user.username}'s Mood Report")
+
+        p.setFont("Helvetica", 12)
+        y = height - 80
+        for entry in mood_entries:
+            line = f"Date: {entry.date} | Mood: {entry.mood} | Intensity: {entry.intensity}/10"
+            p.drawString(50, y, line)
+            y -= 20
+            if entry.description:
+                desc = f"Description: {entry.description}"
+                p.drawString(70, y, desc)
+                y -= 30
+            if y < 50:
+                p.showPage()
+                y = height - 50
+
+        p.showPage()
+        p.save()
+
+        buffer.seek(0)
+        return HttpResponse(buffer, content_type='application/pdf')
+
+
+
+
+# # posting/views.py
+# from rest_framework import generics, permissions
+# from rest_framework.response import Response
+# from rest_framework.views import APIView
+# from .models import Post, Comment
+# from .serializers import PostSerializer, CommentSerializer
+# from .permissions import IsOwnerOrReadOnly
+
+# # List all posts, create post
+# class PostListCreateView(generics.ListCreateAPIView):
+#     queryset = Post.objects.all().order_by('-created_at')
+#     serializer_class = PostSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def perform_create(self, serializer):
+#         serializer.save(user=self.request.user)
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context.update({"request": self.request})
+#         return context
+
+# # Retrieve, update, delete a post
+# class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostSerializer
+#     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+#     def get_serializer_context(self):
+#         context = super().get_serializer_context()
+#         context.update({"request": self.request})
+#         return context
+
+# # Create a comment on a post
+# # views.py
+
+# from rest_framework import generics, permissions
+# from rest_framework.exceptions import PermissionDenied
+# from rest_framework.response import Response
+# from rest_framework import status
+# from django.shortcuts import get_object_or_404
+# from .models import Post, Comment, Notification
+# from .serializers import CommentSerializer
+
+# class CommentCreateView(generics.CreateAPIView):
+#     serializer_class = CommentSerializer
+#     permission_classes = [permissions.IsAuthenticated]
+
+#     def perform_create(self, serializer):
+#         post_id = self.kwargs['post_id']
+#         post = get_object_or_404(Post, id=post_id)
+
+#         # ✅ Prevent commenting on own post
+#         if post.user == self.request.user:
+#             raise PermissionDenied("You cannot comment on your own post")
+
+#         # ✅ Save comment
+#         comment = serializer.save(user=self.request.user, post=post)
+
+#         # ✅ Notify post owner
+#         Notification.objects.create(
+#             user=post.user,
+#             post=post,
+#             message=f"Someone commented on your post."
+#         )
+
+
+# from rest_framework import generics
+# from .models import Notification
+# from .serializers import NotificationSerializer
+# from rest_framework.permissions import IsAuthenticated
+
+# class NotificationListView(generics.ListAPIView):
+#     serializer_class = NotificationSerializer
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+
+from rest_framework import generics, permissions
+from rest_framework.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+from .models import Post, Comment, Notification
+from .serializers import PostSerializer, CommentSerializer, NotificationSerializer
+from .permissions import IsOwnerOrReadOnly
+
+class PostListCreateView(generics.ListCreateAPIView):
+    queryset = Post.objects.all().order_by('-created_at')
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_serializer_context(self):
+        return {**super().get_serializer_context(), "request": self.request}
+
+class PostDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_serializer_context(self):
+        return {**super().get_serializer_context(), "request": self.request}
+
+class CommentCreateView(generics.CreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs['post_id']
+        post = get_object_or_404(Post, id=post_id)
+
+        if post.user == self.request.user:
+            raise PermissionDenied("You cannot comment on your own post")
+
+        comment = serializer.save(user=self.request.user, post=post)
+
+        Notification.objects.create(
+            user=post.user,
+            post=post,
+            message=f"{self.request.user.username} commented on your post."
         )
-        tokens = get_tokens_for_user(user)
-        return Response({
-            'message': 'User registered successfully',
-            'tokens': tokens,
-            'user': UserSerializer(user).data
-        }, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-# User login with JWT tokens
-@api_view(['POST'])
-def login_user(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
+class NotificationListView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    if not username or not password:
-        return Response({'error': 'Both username and password are required'}, 
-                       status=status.HTTP_400_BAD_REQUEST)
-
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        login(request, user)  # Optional: maintain session if needed
-        tokens = get_tokens_for_user(user)
-        return Response({
-            'tokens': tokens,
-            'user': UserSerializer(user).data
-        }, status=status.HTTP_200_OK)
-    return Response({'error': 'Invalid credentials'}, 
-                   status=status.HTTP_401_UNAUTHORIZED)
-
-# User logout
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_user(request):
-    try:
-        refresh_token = request.data.get('refresh_token')
-        if not refresh_token:
-            return Response({'error': 'Refresh token is required'}, 
-                          status=status.HTTP_400_BAD_REQUEST)
-        
-        token = RefreshToken(refresh_token)
-        token.blacklist()
-        
-        logout(request)  # Optional: clear session if using session auth
-        
-        return Response({'message': 'Successfully logged out'}, 
-                       status=status.HTTP_205_RESET_CONTENT)
-    except TokenError as e:
-        return Response({'error': str(e)}, 
-                       status=status.HTTP_400_BAD_REQUEST)
-
-# Get authenticated user profile
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def user_profile(request):
-    user = request.user
-    serializer = UserSerializer(user)
-    return Response(serializer.data, status=status.HTTP_200_OK)
-
-# Refresh token endpoint
-@api_view(['POST'])
-def refresh_token(request):
-    refresh_token = request.data.get('refresh')
-    if not refresh_token:
-        return Response({'error': 'Refresh token is required'}, 
-                      status=status.HTTP_400_BAD_REQUEST)
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
     
-    try:
-        token = RefreshToken(refresh_token)
-        access_token = str(token.access_token)
-        return Response({'access': access_token}, 
-                       status=status.HTTP_200_OK)
-    except TokenError as e:
-        return Response({'error': str(e)}, 
-                       status=status.HTTP_401_UNAUTHORIZED)
+
     
+# api/views.py
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import Notification
+
+class MarkNotificationsReadView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return Response({"message": "Notifications marked as read."})
